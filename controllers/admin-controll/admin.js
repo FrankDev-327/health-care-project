@@ -1,5 +1,6 @@
 'use strict';
 
+const { encode } = require('../../auths/index')
 const bcrypt = require('bcryptjs-then')
 const models = require('../../models');
 
@@ -153,8 +154,10 @@ module.exports = {
                     msg: 'Incorrect password! Try again.'
                 });
             }
+            var token = await encode.create_token(info);
             return res.status(200).json({
                 info,
+                token:token,
                 msg: 'User informationss.'
             });
 
