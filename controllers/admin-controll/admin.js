@@ -127,7 +127,6 @@ module.exports = {
             var info;
             var body = req.body;
             var check_pass = checkPassword(body.password);
-            var check_pass = checkPassword(body.password);
             if (!check_pass.IsNot) {
                 return res.status(401).json({
                     msg: check_pass.msg
@@ -138,7 +137,7 @@ module.exports = {
                     name: body.name
                 }
             }
-            
+
             info = await models.HeatlhAdministration.findOne(setFind);
             if (info) {
                 return res.status(401).json({
