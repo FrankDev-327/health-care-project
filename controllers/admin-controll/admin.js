@@ -160,7 +160,7 @@ module.exports = {
 
         } catch (error) {
             return res.status(401).json({
-                msg: 'There was a error when you were trying to update it.'
+                msg: 'There was a error.'
             });
         }
     }
