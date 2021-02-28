@@ -23,6 +23,12 @@ module.exports = {
       password: {
         type: Sequelize.STRING
       },
+      create_by: {
+        type: Sequelize.INTEGER
+      },
+      update_by: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
