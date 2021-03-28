@@ -3,61 +3,39 @@
 const { encode } = require('../../auths/index')
 const bcrypt = require('bcryptjs-then')
 const models = require('../../models');
-
-function checkPassword(str) {
-    // at least one number, one lowercase and one uppercase letter
-    // at least six characters that are letters, numbers or the underscore
-    var re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])\w{6,}$/;
-    var auth_pass = re.test(str);
-    if (!auth_pass) {
-        return {
-            IsNot: false,
-            msg: 'Format password is not allowed.'
-        }
-    }
-    return true;
-}
-
-async function hashPass(user_pass) {
-    try {
-        return bcrypt.hash(user_pass, 10);
-    } catch (error) {
-        console.log(error)
-        return;
-    }
-}
-
-async function compareHashPass(hash, pass) {
-    try {
-        return bcrypt.compare(hash, pass);
-    } catch (error) {
-        console.log(error)
-        return;
-    }
-}
+const aux_methods = require('../../aux_methods/aux')
 
 module.exports = {
     create_admin: async (req, res) => {
-        var body = req.body;
-        var check_pass = checkPassword(body.password);
+        var body = req.body, info;
+        var check_pass = aux_methods.checkPassword(body.password)
+
         if (!check_pass.IsNot) {
             return res.status(401).json({
                 msg: check_pass.msg
             });
         }
-        body.password = await hashPass(body.password);
+
+        body.password = await aux_methods.hashPass(body.password);
         body.create_by = req.log_user.id;
         body.update_by = req.log_user.id;
         try {
-            await models.HeatlhAdministration.create(body);
+            info = await models.HeatlhAdministration.create(body);
         } catch (error) {
             return res.status(401).json({
                 msg: 'There was a error on the insert to the new admin/user.'
             });
         }
+
+        if (info !== null) {
+            return res.status(200).json({
+                info,
+                msg: 'New admin/user was created successfuly!'
+            });
+        }
+
         return res.status(200).json({
-            info,
-            msg: 'New admin/user was created successfuly!'
+            msg: 'New admin/user was not created correctly!'
         });
     },
     update_pass_by_admin: async (req, res) => {
@@ -67,14 +45,16 @@ module.exports = {
                 msg: 'You have not allowed to do this action!'
             });
         }
+
         var body = req.body;
-        var check_pass = checkPassword(body.password);
+        var check_pass = aux_methods.checkPassword(body.password);
         if (!check_pass.IsNot) {
             return res.status(401).json({
                 msg: check_pass.msg
             });
         }
-        body.password = await hashPass(body.password);
+
+        body.password = await aux_methods.hashPass(body.password);
         var setBody = {
             update_by: req.log_user.id,
             password: body.password
@@ -83,6 +63,7 @@ module.exports = {
             no_id: body.no_id,
             id: body.id
         }
+
         try {
             var info = await models.HeatlhAdministration.update(setBody, setWhere);
         } catch (error) {
@@ -90,9 +71,17 @@ module.exports = {
                 msg: 'There was a error when you were trying to update it.'
             });
         }
+
+
+        if (info == null) {
+            return res.status(200).json({
+                msg: 'The password was not updated correctly!'
+            });
+        }
+
         return res.status(200).json({
             info,
-            msg: 'Admin/user was updated successfuly!'
+            msg: 'The password was updated successfuly!'
         });
     },
     change_role_by_admin: async (req, res) => {
@@ -120,14 +109,14 @@ module.exports = {
         }
         return res.status(200).json({
             info,
-            msg: 'Admin/user was updated successfuly!'
+            msg: 'The role was updated successfuly!'
         });
     },
     login_admin: async (req, res) => {
         try {
             var info;
             var body = req.body;
-            var check_pass = checkPassword(body.password);
+            var check_pass = aux_methods.checkPassword(body.password);
             if (!check_pass.IsNot) {
                 return res.status(401).json({
                     msg: check_pass.msg
@@ -140,7 +129,7 @@ module.exports = {
             }
 
             info = await models.HeatlhAdministration.findOne(setFind);
-            if (info) {
+            if (info == null) {
                 return res.status(401).json({
                     info,
                     msg: 'User not exist in our registers!'
@@ -154,11 +143,12 @@ module.exports = {
                     msg: 'Incorrect password! Try again.'
                 });
             }
+
             var token = await encode.create_token(info);
             return res.status(200).json({
                 info,
-                token:token,
-                msg: 'User informationss.'
+                token: token,
+                msg: 'User information.'
             });
 
         } catch (error) {
