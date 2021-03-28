@@ -7,7 +7,7 @@ const myKey = require('fs').readFileSync('../my_key.pub');
 exports.auth_token = async (req, res) => {
 	if (!req.headers.authorization)
 		return res.status(403).json({
-			message: 'La peticion no tiene la cabecera de autenticacion'
+			message: 'The request does not have the authentication header'
 		});
 
 	try {

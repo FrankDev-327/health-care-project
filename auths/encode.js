@@ -1,7 +1,7 @@
 'use strict';
 
 var jwt = require('jsonwebtoken');
-var myKey = require('fs').readFileSync('../my_key.key')
+var myKey = require('fs').readFileSync('../my_key.key');
 exports.create_token = async (obj_user) => {
     var payload = {
         id: obj_user.id,
